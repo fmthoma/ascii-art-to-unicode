@@ -6,40 +6,15 @@ module Main where
 import           Data.Maybe
 import           Data.Monoid
 import           Lib
+import           System.Environment
 
 main :: IO ()
 main = do
-    plane <- fmap (planeFromList' ' ' . lines) getContents
-    putStrLn $ unlines $ planeToList 20 $ extend (substituteChar diagrams) $ plane
-  where
-    fillZero :: Zipper Int
-    fillZero = Zipper (repeat 0) 0 (repeat 0)
-
-    testPlane :: Plane Char
-    testPlane = planeFromList' ' ' $
-        [ "-----           "
-        , " +-----------+  "
-        , " | Hello     |# "
-        , "+|     World |# "
-        , "|+--+-----+--+# "
-        , "| ########|#### "
-        , "|  +-+-++-+     "
-        , "|  +-+ |  ++    "
-        , "|    | |  ++    "
-        , "|    '-' .-     "
-        , "| ++     +++ +  "
-        , "v - ++++++ ++   "
-        , "                "
-        , "  +-> <-+       "
-        , "        +>      "
-        , "        |       "
-        , "        v       "
-        , "       ^        "
-        , "      <+>       "
-        , "       v        "
-        , "                "
-        , "                "
-        ]
+    input <- getArgs >>= \case
+        []       -> getContents
+        file : _ -> readFile file
+    let plane = planeFromList' ' ' (lines input)
+    putStrLn $ unlines $ planeToList 30 $ extend (substituteChar diagrams) $ plane
 
 data Zipper a = Zipper
     { before  :: [a]
@@ -150,7 +125,7 @@ toString (Diag ((a, b, c), (d, e, f), (g, h, i))) = [a, b, c, d, e, f, g, h, i]
 
 lookupDiagram :: Diagram -> [(Diagram, Char)] -> Maybe Char
 lookupDiagram pattern mappings = case filter (satisfies pattern) mappings of
-    [] -> Nothing
+    []    -> Nothing
     a : _ -> Just (snd a)
   where
     satisfies :: Diagram -> (Diagram, Char) -> Bool
@@ -159,18 +134,18 @@ lookupDiagram pattern mappings = case filter (satisfies pattern) mappings of
 
 connectsLike :: Char -> Char -> Bool
 char `connectsLike` pattern = case pattern of
-    '-' -> char `elem` ['-', '+', '\'', '.', '>', '<']
-    '+' -> char `elem` ['+', '\'', '.']
-    '|' -> char `elem` ['|', '+', '\'', '.', '^', 'v']
-    '.' -> char `elem` ['\'', '.']
+    '-'  -> char `elem` ['-', '+', '\'', '.', '>', '<']
+    '+'  -> char `elem` ['+', '\'', '.']
+    '|'  -> char `elem` ['|', '+', '\'', '.', '^', 'v']
+    '.'  -> char `elem` ['\'', '.']
     '\''-> char `elem` ['\'', '.']
-    '#' -> char `elem` ['#']
-    '<' -> char `elem` ['<']
-    '>' -> char `elem` ['>']
-    '^' -> char `elem` ['^']
-    'v' -> char `elem` ['v']
-    ' ' -> True
-    _   -> False
+    '#'  -> char `elem` ['#']
+    '<'  -> char `elem` ['<']
+    '>'  -> char `elem` ['>']
+    '^'  -> char `elem` ['^']
+    'v'  -> char `elem` ['v']
+    ' '  -> True
+    _    -> False
 
 diagrams :: [(Diagram, Char)]
 diagrams = reverse $ fmap (\(a, b) -> (fromString a, b))

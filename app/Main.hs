@@ -1,30 +1,45 @@
 {-# LANGUAGE DeriveFunctor   #-}
+{-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE RecordWildCards #-}
 module Main where
 
+import           Data.Maybe
 import           Data.Monoid
 import           Lib
 
 main :: IO ()
-main = putStrLn $ showPlane 10 $ fmap getSum $ convoluteSpread $ convoluteSpread $ fmap Sum $ plane
+main = do
+    plane <- fmap (planeFromList' ' ' . lines) getContents
+    putStrLn $ unlines $ planeToList 20 $ extend (substituteChar diagrams) $ plane
   where
     fillZero :: Zipper Int
     fillZero = Zipper (repeat 0) 0 (repeat 0)
 
-    plane :: Plane Int
-    plane = Plane $ Zipper
-        { before  = repeat fillZero
-        , current = fillZero { current = 1 }
-        , after   = repeat fillZero}
-
-convoluteSpread :: Monoid a => Plane a -> Plane a
-convoluteSpread = extend spread
-
-
-spread :: Monoid a => Plane a -> a
-spread (Plane (Zipper ((Zipper as b cs) : farAbove) (Zipper (d : ds) e (f : fs)) ((Zipper gs h is) : farBelow)))
-    = mconcat [b, d, e, f, h]
-
+    testPlane :: Plane Char
+    testPlane = planeFromList' ' ' $
+        [ "-----           "
+        , " +-----------+  "
+        , " | Hello     |# "
+        , "+|     World |# "
+        , "|+--+-----+--+# "
+        , "| ########|#### "
+        , "|  +-+-++-+     "
+        , "|  +-+ |  ++    "
+        , "|    | |  ++    "
+        , "|    '-' .-     "
+        , "| ++     +++ +  "
+        , "v - ++++++ ++   "
+        , "                "
+        , "  +-> <-+       "
+        , "        +>      "
+        , "        |       "
+        , "        v       "
+        , "       ^        "
+        , "      <+>       "
+        , "       v        "
+        , "                "
+        , "                "
+        ]
 
 data Zipper a = Zipper
     { before  :: [a]
@@ -39,7 +54,24 @@ moveAfter  zipper@Zipper { before = as, current = b, after = c : cs }
     = zipper { before = b : as, current = c, after = cs }
 
 showZipper :: Show a => Int -> Zipper a -> String
-showZipper n Zipper{..} = show =<< reverse (take n before) ++ [current] ++ take n after
+showZipper n zipper = zipperToList n zipper >>= show
+
+zipperToList :: Int -> Zipper a -> [a]
+zipperToList n Zipper{..} = current : take n after
+
+zipperOf :: a -> Zipper a
+zipperOf a = Zipper { before = repeat a, current = a, after = repeat a }
+
+emptyZipper :: Monoid a => Zipper a
+emptyZipper = zipperOf mempty
+
+zipperFromList' :: a -> [a] -> Zipper a
+zipperFromList' a = \case
+    []     -> zipperOf a
+    b : bs -> (zipperOf a) { current = b, after = bs ++ repeat a }
+
+zipperFromList :: Monoid a => [a] -> Zipper a
+zipperFromList = zipperFromList' mempty
 
 -- | Outer Zipper: Up/down
 -- Inner Zipper: Left/Right
@@ -55,7 +87,26 @@ moveDown  = Plane . moveAfter       . unPlane
 
 showPlane :: Show a => Int -> Plane a -> String
 showPlane n (Plane Zipper{..}) = unlines . fmap (showZipper n) $
-    reverse (take n before) ++ [current] ++ take n after
+    current : take n after
+
+planeToList :: Int -> Plane a -> [[a]]
+planeToList n (Plane Zipper{..}) = fmap (zipperToList n) $
+    current : take n after
+
+
+planeOf :: a -> Plane a
+planeOf a = Plane $ Zipper { before = repeat (zipperOf a), current = zipperOf a, after = repeat (zipperOf a) }
+
+emptyPlane :: Monoid a => Plane a
+emptyPlane = planeOf mempty
+
+planeFromList :: Monoid a => [[a]] -> Plane a
+planeFromList = planeFromList' mempty
+
+planeFromList' :: a -> [[a]] -> Plane a
+planeFromList' a = \case
+    []       -> planeOf a
+    as : ass -> Plane $ (zipperOf (zipperOf a)) { current = zipperFromList' a as, after = fmap (zipperFromList' a) ass ++ repeat (zipperOf a) }
 
 
 
@@ -89,26 +140,165 @@ instance Comonad Plane where
 
 newtype Diagram = Diag ((Char, Char, Char), (Char, Char, Char), (Char, Char, Char))
 
+
 fromString :: String -> Diagram
 fromString [a, b, c, d, e, f, g, h, i] = Diag ((a, b, c), (d, e, f), (g, h, i))
 fromString _ = undefined
 
+toString :: Diagram -> String
+toString (Diag ((a, b, c), (d, e, f), (g, h, i))) = [a, b, c, d, e, f, g, h, i]
+
+lookupDiagram :: Diagram -> [(Diagram, Char)] -> Maybe Char
+lookupDiagram pattern mappings = case filter (satisfies pattern) mappings of
+    [] -> Nothing
+    a : _ -> Just (snd a)
+  where
+    satisfies :: Diagram -> (Diagram, Char) -> Bool
+    satisfies diagram@(Diag(_, (_, a1, _), _)) (pattern@(Diag(_, (_, a2, _), _)), _)
+      = a1 `connectsLike` a2 && (and $ zipWith connectsLike (toString diagram) (toString pattern))
+
+connectsLike :: Char -> Char -> Bool
+char `connectsLike` pattern = case pattern of
+    '-' -> char `elem` ['-', '+', '\'', '.', '>', '<']
+    '+' -> char `elem` ['+', '\'', '.']
+    '|' -> char `elem` ['|', '+', '\'', '.', '^', 'v']
+    '.' -> char `elem` ['\'', '.']
+    '\''-> char `elem` ['\'', '.']
+    '#' -> char `elem` ['#']
+    '<' -> char `elem` ['<']
+    '>' -> char `elem` ['>']
+    '^' -> char `elem` ['^']
+    'v' -> char `elem` ['v']
+    ' ' -> True
+    _   -> False
+
 diagrams :: [(Diagram, Char)]
-diagrams = fmap (\(a, b) -> (fromString a, b))
+diagrams = reverse $ fmap (\(a, b) -> (fromString a, b))
     [ ( "   \
-        \---\
-        \   "
-      , '─' )
+        \ --\
+        \   ", '─' )
 
     , ( "   \
-        \ --\
-        \   "
-      , '─' )
+        \-- \
+        \   ", '─' )
 
     , ( "   \
-        \ --\
-        \   "
-      , '─' )
+        \ | \
+        \ | ", '│' )
 
+    , ( " | \
+        \ | \
+        \   ", '│' )
+
+    , ( " | \
+        \-+ \
+        \   ", '┘' )
+
+    , ( " | \
+        \ +-\
+        \   ", '└' )
+
+    , ( "   \
+        \ +-\
+        \ | ", '┌' )
+
+    , ( "   \
+        \-+ \
+        \ | ", '┐' )
+
+    , ( " | \
+        \ +-\
+        \ | ", '├' )
+
+    , ( " | \
+        \-+ \
+        \ | ", '┤' )
+
+    , ( "   \
+        \-+-\
+        \ | ", '┬' )
+
+    , ( " | \
+        \-+-\
+        \   ", '┴' )
+
+    , ( " | \
+        \-+-\
+        \ | ", '┼' )
+
+    , ( "   \
+        \ .-\
+        \ | ", '╭' )
+
+    , ( "   \
+        \-. \
+        \ | ", '╮' )
+
+    , ( " | \
+        \-' \
+        \   ", '╯' )
+
+    , ( " | \
+        \ '-\
+        \   ", '╰' )
+
+    , ( "   \
+        \ # \
+        \ # ", '█' )
+
+    , ( "   \
+        \## \
+        \   ", '█' )
+
+    , ( "   \
+        \ ##\
+        \   ", '█' )
+
+    , ( " # \
+        \ # \
+        \   ", '█' )
+
+    , ( "   \
+        \ - \
+        \ # ", '▄' )
+
+    , ( " # \
+        \ - \
+        \   ", '▀' )
+
+    , ( "   \
+        \ |#\
+        \   ", '▐' )
+
+    , ( "   \
+        \#| \
+        \   ", '▌' )
+
+    , ( "   \
+        \ +#\
+        \ ##", '▟' )
+
+    , ( "   \
+        \-> \
+        \   ", '▷' )
+
+    , ( "   \
+        \ <-\
+        \   ", '◁' )
+
+    , ( "   \
+        \ ^ \
+        \ | ", '△' )
+
+    , ( " | \
+        \ v \
+        \   ", '▽' )
     ]
 
+substituteChar :: [(Diagram, Char)] -> Plane Char -> Char
+substituteChar mappings = \case
+    Plane ( Zipper ((Zipper (a : as) b (c : cs)) : _)
+                   (Zipper (d : ds) e (f : fs))
+                   ((Zipper (g : gs) h (i : is)) : _) )
+        -> fromMaybe e (lookupDiagram (fromString [a, b, c, d, e, f, g, h, i]) mappings)
+    _ -> undefined

@@ -1,7 +1,10 @@
 ASCII art to Unicode converter
 ==============================
 
-Small CLI program to convert ASCII box drawings to unicode.
+Small CLI program to convert ASCII box drawings to unicode. Inspired
+by [svgbob](https://github.com/ivanceras/svgbobrus)
+and
+[The Monads Hidden Behind Every Zipper](http://blog.sigfpe.com/2007/01/monads-hidden-behind-every-zipper.html).
 
 
 ```

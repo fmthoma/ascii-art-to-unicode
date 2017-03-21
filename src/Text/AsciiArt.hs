@@ -140,13 +140,13 @@ lookupPattern pattern = case filter (satisfies pattern) patterns of
 connectsLike :: Char -> Char -> Bool
 char `connectsLike` pattern = case pattern of
     '-'   -> char `elem` ['-', '>', '<', '─'] || char `connectsLike` '+'
+    '|'   -> char `elem` ['|', '^', 'v', '│'] || char `connectsLike` '+'
     '+'   -> char `elem` [ '+'
                          , '└', '┘', '┌', '┐'
-                         , '├', '┤', '┬', '┴', '┼'
-                         , '╭', '╮', '╯', '╰' ]
+                         , '├', '┤', '┬', '┴', '┼' ]
                          || char `connectsLike` '.'
-    '|'   -> char `elem` ['|', '^', 'v', '│'] || char `connectsLike` '+'
-    '.'   -> char `elem` ['\'', '.']
+    '.'   -> char `elem` [ '\'', '.'
+                         , '╭', '╮', '╯', '╰' ]
     '\''  -> char `connectsLike` '.'
     ' '   -> True
     other -> char == other

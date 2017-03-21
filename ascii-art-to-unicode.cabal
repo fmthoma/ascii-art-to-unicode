@@ -27,6 +27,7 @@ executable aa2u
   ghc-options:         -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , ascii-art-to-unicode
+                     , strict
   default-language:    Haskell2010
 
 test-suite ascii-art-to-unicode-test

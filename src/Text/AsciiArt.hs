@@ -140,10 +140,14 @@ lookupPattern pattern = case filter (satisfies pattern) patterns of
 connectsLike :: Char -> Char -> Bool
 char `connectsLike` pattern = case pattern of
     '-'   -> char `elem` ['-', '>', '<', '─'] || char `connectsLike` '+'
-    '|'   -> char `elem` ['|', '^', 'v', '│'] || char `connectsLike` '+'
+    '='   -> char `elem` ['=', '>', '<', '═'] || char `connectsLike` '+'
+    '|'   -> char `elem` ['|', '^', 'v', '│'] || char `connectsLike` ':' || char `connectsLike` '+'
+    ':'   -> char `elem` [':', '┆']
     '+'   -> char `elem` [ '+'
                          , '└', '┘', '┌', '┐'
-                         , '├', '┤', '┬', '┴', '┼' ]
+                         , '╙', '╜', '╓', '╖'
+                         , '├', '┤', '┬', '┴', '┼'
+                         , '╞', '╡', '╤', '╧', '╪' ]
                          || char `connectsLike` '.'
     '.'   -> char `elem` [ '\'', '.'
                          , '╭', '╮', '╯', '╰' ]
@@ -158,6 +162,14 @@ char `connectsLike` pattern = case pattern of
 patterns :: [(Pattern, Char)]
 patterns = reverse $ fmap (\(a, b) -> (patternFromString a, b))
     [ ( "   \
+        \ ==\
+        \   ", '═' )
+
+    , ( "   \
+        \== \
+        \   ", '═' )
+
+    , ( "   \
         \ --\
         \   ", '─' )
 
@@ -172,6 +184,58 @@ patterns = reverse $ fmap (\(a, b) -> (patternFromString a, b))
     , ( " | \
         \ | \
         \   ", '│' )
+
+    , ( "   \
+        \ : \
+        \ | ", '┆' )
+
+    , ( " | \
+        \ : \
+        \   ", '┆' )
+
+    , ( "   \
+        \ : \
+        \ : ", '┆' )
+
+    , ( " : \
+        \ : \
+        \   ", '┆' )
+
+    , ( " | \
+        \=+ \
+        \   ", '╛' )
+
+    , ( " | \
+        \ +=\
+        \   ", '╘' )
+
+    , ( "   \
+        \ +=\
+        \ | ", '╒' )
+
+    , ( "   \
+        \=+ \
+        \ | ", '╕' )
+
+    , ( " | \
+        \ +=\
+        \ | ", '╞' )
+
+    , ( " | \
+        \=+ \
+        \ | ", '╡' )
+
+    , ( "   \
+        \=+=\
+        \ | ", '╤' )
+
+    , ( " | \
+        \=+=\
+        \   ", '╧' )
+
+    , ( " | \
+        \=+=\
+        \ | ", '╪' )
 
     , ( " | \
         \-+ \

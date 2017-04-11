@@ -1,3 +1,129 @@
+{- |
+=Basic Elements
+
+==Simple Boxes
+
+>>> :{
+aa2u "++  +-----+  +--+--+-----+  \n\
+     \++  +--+  |  |  |  |     |  \n\
+     \       |  |  +--+--+--+--+  \n\
+     \+---+  |  |  |     |  |  |  \n\
+     \+---+  +--+  +-----+--+--+  "
+:}
+┌┐  ┌─────┐  ┌──┬──┬─────┐
+└┘  └──┐  │  │  │  │     │
+       │  │  ├──┴──┼──┬──┤
+┌───┐  │  │  │     │  │  │
+└───┘  └──┘  └─────┴──┴──┘
+
+==Rounded Boxes
+
+>>> :{
+aa2u "..  .-----.  .--+--+-----.  \n\
+     \''  '--.  |  |  |  |     |  \n\
+     \       |  |  +--+--+--+--+  \n\
+     \.---.  |  |  |     |  |  |  \n\
+     \'---'  '--'  '-----+--+--'  "
+:}
+╭╮  ╭─────╮  ╭──┬──┬─────╮
+╰╯  ╰──╮  │  │  │  │     │
+       │  │  ├──┴──┼──┬──┤
+╭───╮  │  │  │     │  │  │
+╰───╯  ╰──╯  ╰─────┴──┴──╯
+
+==Dotted and double strokes
+
+>>> :{
+aa2u "++  .-----.  +==+==+=====+  \n\
+     \++  +==+  :  |  :  |     |  \n\
+     \       :  :  +==+==+==+==+  \n\
+     \+===+  :  :  |     |  :  |  \n\
+     \+---+  '--'  +=====+==+==+  "
+:}
+┌┐  ╭─────╮  ╒══╤══╤═════╕
+└┘  ╘══╕  ┆  │  ┆  │     │
+       ┆  ┆  ╞══╧══╪══╤══╡
+╒═══╕  ┆  ┆  │     │  ┆  │
+└───┘  ╰──╯  ╘═════╧══╧══╛
+
+==Cast shadows
+
+>>> :{
+aa2u "+-------------+   \n\
+     \|             |   \n\
+     \+---+     +---+#  \n\
+     \  ##|     |#####  \n\
+     \    |     |#      \n\
+     \    +-----+#      \n\
+     \      ######      "
+:}
+┌─────────────┐
+│             │
+└───┐     ┌───┘█
+  ██│     │█████
+    │     │█
+    └─────┘█
+      ██████
+
+=Properties
+
+==Idempotent
+Already rendered portions are not affected:
+
+>>> :{
+aa2u "┌┐  ╭─────╮  ╒══╤══╤═════╕  ┌───┐   \n\
+     \└┘  ╘══╕  ┆  │  ┆  │     │  │   │   \n\
+     \       ┆  ┆  ╞══╧══╪══╤══╡  │   │█  \n\
+     \╒═══╕  ┆  ┆  │     │  ┆  │  └───┘█  \n\
+     \└───┘  ╰──╯  ╘═════╧══╧══╛    ████  "
+:}
+┌┐  ╭─────╮  ╒══╤══╤═════╕  ┌───┐
+└┘  ╘══╕  ┆  │  ┆  │     │  │   │
+       ┆  ┆  ╞══╧══╪══╤══╡  │   │█
+╒═══╕  ┆  ┆  │     │  ┆  │  └───┘█
+└───┘  ╰──╯  ╘═════╧══╧══╛    ████
+
+==Incremental
+Existing characters can be replaced and new connections can be added:
+
+>>> :{
+aa2u "┌──+──┐   .─────+─────.  ┌────┐    \n\
+     \│  +==+   │     |     │  │####│    \n\
+     \+==+  |   │     |     │  │#   │█   \n\
+     \└──+─-┘   │     +-----+  └────┘█#  \n\
+     \          +=====+     │    █████#  \n\
+     \╭──+─-╮   │     |     │     #####  \n\
+     \│  |  |   │     |     │            \n\
+     \╰──+──╯   '───────────'            "
+:}
+┌──┬──┐   ╭─────┬─────╮  ┌────┐
+│  ╞══╡   │     │     │  │████│
+╞══╡  │   │     │     │  │█   │█
+└──┴──┘   │     ├─────┤  └────┘██
+          ╞═════╡     │    ██████
+╭──┬──╮   │     │     │     █████
+│  │  │   │     │     │
+╰──┴──╯   ╰───────────╯
+
+=Limitations
+Some connections do not work as expected (mostly because the corresponding
+Unicode characters do not exist), e.g. rounded corners with double-stroke lines,
+or connection pieces connecting horizontal single- and double-stroke lines:
+
+>>> :{
+aa2u "--+==  .==.  .--.--.   \n\
+     \  |    |  |  |  |  |   \n\
+     \==+--  '=='  .--+--'   \n\
+     \  |          |  |  |   \n\
+     \--+==  --==  '--'--'   "
+:}
+──┐══  ╒══╕  ╭──╮──╮
+  │    │  │  │  │  │
+══├──  ╘══╛  ╰──┼──╯
+  │          │  │  │
+──┘══  ──══  ╰──╰──╯
+
+-}
 {-# LANGUAGE DeriveFunctor   #-}
 {-# LANGUAGE LambdaCase      #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -345,3 +471,21 @@ substituteChar = \case
 -- 'extend'.
 renderAsciiToUnicode :: Plane Char -> Plane Char
 renderAsciiToUnicode = extend substituteChar
+
+
+
+{- $setup
+>>> :{
+let aa2u input =
+        let inputLines = lines input
+            plane = planeFromList ' ' inputLines
+            width = maximum (fmap length inputLines)
+            height = length inputLines
+        in  putStr
+            . unlines
+            . fmap (reverse . dropWhile (== ' ') . reverse)
+            . planeToList height width
+            . renderAsciiToUnicode
+            $ plane
+:}
+-}

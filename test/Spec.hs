@@ -1,2 +1,12 @@
+import Test.DocTest
+
 main :: IO ()
-main = putStrLn "Test suite not yet implemented"
+main =
+    let extensions =
+            [ "-XLambdaCase"
+            , "-XMultiWayIf"
+            , "-XOverloadedStrings" ]
+        sourceFolders =
+            [ "src"
+            , "app" ]
+    in  doctest (extensions ++ sourceFolders)

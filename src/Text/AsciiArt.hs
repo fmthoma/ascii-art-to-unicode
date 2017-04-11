@@ -257,8 +257,7 @@ lookupPattern pattern = case filter (satisfies pattern) patterns of
   where
     satisfies :: Pattern -> (Pattern, Char) -> Bool
     satisfies diagram@(Pattern(_, (_, a1, _), _)) (pattern@(Pattern(_, (_, a2, _), _)), _)
-        = a1 `connectsLike` a2
-        && (and $ zipWith connectsLike (patternToString diagram) (patternToString pattern))
+        = and (zipWith connectsLike (patternToString diagram) (patternToString pattern))
 
 -- | Whether a character can connect to another character. For example, @+@
 -- connects both horizontally (like @-@) and vertically (like @|@), so it
@@ -271,7 +270,7 @@ char `connectsLike` pattern = case pattern of
     ':'   -> char `elem` [':', '┆']
     '+'   -> char `elem` [ '+'
                          , '└', '┘', '┌', '┐'
-                         , '╙', '╜', '╓', '╖'
+                         , '╘', '╛', '╒', '╕'
                          , '├', '┤', '┬', '┴', '┼'
                          , '╞', '╡', '╤', '╧', '╪' ]
                          || char `connectsLike` '.'
@@ -288,20 +287,20 @@ char `connectsLike` pattern = case pattern of
 patterns :: [(Pattern, Char)]
 patterns = reverse $ fmap (\(a, b) -> (patternFromString a, b))
     [ ( "   \
-        \ ==\
-        \   ", '═' )
-
-    , ( "   \
-        \== \
-        \   ", '═' )
-
-    , ( "   \
         \ --\
         \   ", '─' )
 
     , ( "   \
         \-- \
         \   ", '─' )
+
+    , ( "   \
+        \ ==\
+        \   ", '═' )
+
+    , ( "   \
+        \== \
+        \   ", '═' )
 
     , ( "   \
         \ | \

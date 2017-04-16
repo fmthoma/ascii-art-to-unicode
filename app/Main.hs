@@ -1,7 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 module Main where
 
-import           Control.Applicative
 import           System.Environment
 import qualified System.IO.Strict as Strict
 import           Text.AsciiArt
@@ -17,6 +16,10 @@ main = do
         []           -> Pipe
         ["-i", file] -> Inplace file
         [file]       -> Read file
+        _            -> error "Usage: \n\
+                              \    aa2u            # reads from stdin, prints to stdout\n\
+                              \    aa2u FILE       # reads FILE, prints to stdout\n\
+                              \    aa2u -i FILE    # reads from and writes to FILE\n"
     input <- case mode of
         Inplace file -> Strict.readFile file
         Read    file -> readFile file

@@ -227,7 +227,7 @@ instance Comonad Zipper where
 --------------------------------------------------------------------------------
 
 -- | A plane is a 'Zipper' of 'Zipper's. The outer layer zips through lines
--- (up/down), the inner layer through columns (left/right).
+-- (up\/down), the inner layer through columns (left\/right).
 -- Like the 'Zipper', the 'Plane' is assumed to be infinite in all directions.
 newtype Plane a = Plane { unPlane :: Zipper (Zipper a) }
     deriving (Functor)
@@ -516,16 +516,17 @@ renderAsciiToUnicode = extend substituteChar
 
 {- $setup
 >>> :{
-let aa2u input =
-        let inputLines = lines input
-            plane = planeFromList ' ' inputLines
-            width = maximum (fmap length inputLines)
-            height = length inputLines
-        in  putStr
-            . unlines
-            . fmap (reverse . dropWhile (== ' ') . reverse)
-            . planeToList height width
-            . renderAsciiToUnicode
-            $ plane
+aa2u :: String -> IO ()
+aa2u input =
+    let inputLines = lines input
+        plane = planeFromList ' ' inputLines
+        width = maximum (fmap length inputLines)
+        height = length inputLines
+    in  putStr
+        . unlines
+        . fmap (reverse . dropWhile (== ' ') . reverse)
+        . planeToList height width
+        . renderAsciiToUnicode
+        $ plane
 :}
 -}

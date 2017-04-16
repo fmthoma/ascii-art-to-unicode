@@ -1,22 +1,33 @@
 name:                ascii-art-to-unicode
 version:             0.1.0.0
--- synopsis:
--- description:
-homepage:            https://github.com/githubuser/ascii-art-to-unicode#readme
+synopsis:            ASCII Art to Unicode Box Drawing converter
+description:
+  @aa2u@ converts ASCII Art box drawings to Unicode.
+  .
+  > > aa2u
+  > +-------------+
+  > | Hello World |
+  > +-------------+
+  > ^D
+  > ┌─────────────┐
+  > │ Hello World │
+  > └─────────────┘
+  .
+  For more examples see the @doctest@ suite in "Text.AsciiArt".
+homepage:            https://github.com/fmthoma/ascii-art-to-unicode#readme
 license:             BSD3
 license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
-category:            Web
+author:              Franz Thoma
+maintainer:          f.m.thoma@googlemail.com
+copyright:           2017 Franz Thoma
 build-type:          Simple
 extra-source-files:  README.md
+                   , stack.yaml
 cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
   exposed-modules:     Text.AsciiArt
-  ghc-options:         -Wall
   build-depends:       base >= 4.7 && < 5
                      , comonad
   default-language:    Haskell2010

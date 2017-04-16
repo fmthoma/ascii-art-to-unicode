@@ -1,5 +1,5 @@
 name:                ascii-art-to-unicode
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            ASCII Art to Unicode Box Drawing converter
 description:
   @aa2u@ converts ASCII Art box drawings to Unicode.
@@ -22,6 +22,7 @@ maintainer:          f.m.thoma@googlemail.com
 copyright:           2017 Franz Thoma
 build-type:          Simple
 extra-source-files:  README.md
+                   , screenshot.png
                    , stack.yaml
 cabal-version:       >=1.10
 
